@@ -1,0 +1,53 @@
+
+- name: Pull latest updates
+  ansible.builtin.dnf:
+    name: "*"
+    state: latest
+  become: true
+
+- name: Set the PostgresSQL yum repository for RHEL or CentOS
+  ansible.builtin.yum_repository:
+    name: PostgresSQL
+    description: PostgresSQL Repository for Centos or RedHat
+    baseurl: https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+  become: true
+when: ansible_facts['ansible_distribution'] == "CentOS"
+
+
+- name: Set the PostgresSQL yum repository for Fedora
+  ansible.builtin.yum_repository:
+    name: PostgresSQL
+    description: PostgresSQL Repository for Centos or RedHat
+    baseurl: https://download.postgresql.org/pub/repos/yum/reporpms/F-37-x86_64/pgdg-fedora-repo-latest.noarch.rpm
+  become: true
+  when: ansible_facts['ansible_distribution'] == "Fedora"
+
+- name: Install postgressql14-server
+  ansible.builtin.dnf:
+    name: postgresql14-server
+    state: present
+  become: true
+
+- name: Create DB cluster instance
+  ansible.builtin.shell: /usr/pgsql-14/bin/postgresql-14-setup initdb
+  become: true
+
+- name: Start and enable postgressql
+  ansible.builtin.service:
+    name: postgresql-14
+    state: started
+    enabled: yes
+  become: true
+
+- name: Check PostgreSQL version
+  ansible.builtin.shell: psql -c 'SELECT version();'
+  register: postgres_version
+  #failed_when: postgres_version.rc != 0
+  become: true
+  become_user: postgres
+
+- name: Fail on PostgresQL and present message
+  ansible.builtin.fail:
+    msg: Postgresql was not installed correctly, please verify and run again.
+  when: postgres_version.rc !=0
+  

@@ -1,0 +1,7 @@
+---
+# tasks file for deploy_postgress
+
+- name: Deploy postgresql for RedHat, Fedora, or CenOS
+  ansible.builtin.include_tasks: 
+    file: postgres_sql_RedHat.yaml
+  when: ansible_facts['ansible_distribution'] == "RedHat"
