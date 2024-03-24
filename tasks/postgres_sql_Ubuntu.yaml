@@ -1,0 +1,46 @@
+
+- name: Pull latest updates
+  ansible.builtin.apt:
+    name: "*"
+    state: latest
+  become: true
+
+- name: Add the PostgreSQL repository
+  ansible.builtin.apt_repository:
+    repo: "deb http://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release }}-pgdg main"
+    state: present
+  become: true
+
+- name: Import the PostgreSQL GPG key
+  ansible.builtin.apt_key:
+    url: "https://www.postgresql.org/media/keys/ACCC4CF8.asc"
+    state: present
+  become: true 
+
+- name: Install postgres sql for Ubuntu
+  ansible.builtin.apt:
+    name: 
+      - postgresql
+      - postgresql-contrib
+    state: present
+  become: true
+
+- name: Start and enable postgressql
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+    enabled: yes
+  become: true
+
+- name: Check PostgreSQL version
+  ansible.builtin.shell: psql -c 'SELECT version();'
+  register: postgres_version
+  #failed_when: postgres_version.rc != 0
+  become: true
+  become_user: postgres
+
+- name: Fail on PostgresQL and present message
+  ansible.builtin.fail:
+    msg: Postgresql was not installed correctly, please verify and run again.
+  when: postgres_version.rc !=0
+  

@@ -5,3 +5,8 @@
   ansible.builtin.include_tasks: 
     file: postgres_sql_RedHat.yaml
   when: ansible_facts['ansible_distribution'] == "RedHat"
+
+- name: Deploy postgresql for Ubunutu
+  ansible.builtin.include_tasks: 
+    file: postgres_sql_RedHat.yaml
+  when: ansible_facts['ansible_distribution'] == "Ubuntu"
